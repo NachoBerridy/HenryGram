@@ -10,6 +10,7 @@ const friendRoutes = require('./routes/friend');
 const groupRoutes = require('./routes/group')
 var morgan = require('morgan');
 const cors = require('cors');
+const serverless = require('serverless-http')
 
 const app = express();
 // Settings
@@ -53,4 +54,4 @@ app.use((err, req, res, next) => {
   res.status(status).send(message);
 });
 
-module.exports = app;
+module.exports.handler = serverless(app);
