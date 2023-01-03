@@ -1,4 +1,4 @@
-service : api
+service: henryGram
 
 provider:
   name: aws
