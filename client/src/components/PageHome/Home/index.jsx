@@ -15,28 +15,38 @@ function Home() {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const user = useSelector((state) => state.userInformation);
+
   useEffect(() => {
-    dispatch(getPostAllUsers());
-  }, []);
+    if (user && !postUsers.length) {
+      dispatch(getPostAllUsers(user?._id));
+    }
+  }, [user]);
   useEffect(() => {
     if (page > 1) {
+      console.log("entre");
       axios
-        .get(`http://localhost:3000/api/posts?limit=${page}`)
+        .get(
+          `http://localhost:3000/api/posts/recomended/${user?._id}?limit=${page}`
+        )
         .then((response) => {
+          console.log("response");
           setNewsLoadPost([...newsLoadPost, ...response.data]);
           setLoading(false);
         })
         .catch((error) => {
           console.log(error);
         });
+      console.log("entre final");
     }
   }, [page]);
 
   const handleScroll = () => {
     if (
       document.getElementById("viewHeigthPost").clientHeight +
+        1 +
         document.getElementById("viewHeigthPost").scrollTop >=
-      document.getElementById("viewHeigthPost").scrollHeight
+        document.getElementById("viewHeigthPost").scrollHeight &&
+      !loading
     ) {
       setPage(page + 1);
       setLoading(true);
@@ -56,6 +66,7 @@ function Home() {
       }
     };
   }, []);
+
   return (
     <main className="w-full flex">
       <div
@@ -63,7 +74,7 @@ function Home() {
         className="w-full h-[calc(100vh-4rem)] sm:h-screen overflow-y-scroll"
       >
         <MakePost />
-       
+
         {postUsers.length
           ? postUsers?.map((posts) => (
               <Post
@@ -75,9 +86,11 @@ function Home() {
                 description={posts.post.description}
                 user={posts.user}
                 imagePost={posts.post.image}
+                group={posts.post.group}
+                likes={posts.post.likes}
               />
             ))
-          : [1, 2].map((value) => <SkeletonPost key={value} />)}
+          : [1, 2, 3, 4, 5].map((value) => <SkeletonPost key={value} />)}
         <div className="my-5">{loading && <Loader />}</div>
 
         {newsLoadPost.length &&
@@ -91,6 +104,7 @@ function Home() {
               description={posts.post.description}
               user={posts.user}
               imagePost={posts.post.image}
+              group={posts.post.group}
             />
           ))}
       </div>

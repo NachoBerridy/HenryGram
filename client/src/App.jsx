@@ -27,7 +27,7 @@ import {
 import ViewPost from "./components/PagePostDetail/viewPost";
 import SideBar from "./components/SideBar";
 import MessageGroup from "./components/PageChats/MessageGroup";
-
+import notFound from "../src/assets/404.png"
 function App() {
   //PORFAVOR NO BORRRAR
   //PORFAVOR NO BORRRAR
@@ -53,7 +53,7 @@ function App() {
 
   const dispatch = useDispatch();
   const auth = useAuth()
-  ;
+
 
   const getData = () => {
     return localStorage.getItem("sessionStarted");
@@ -69,23 +69,25 @@ function App() {
     })();
   }, [saveTokenData]);
 
+ 
+
   useEffect(() => {
     dispatch(getInformationUsersAction());
   }, []);
 
   useEffect(() => {
-    console.log("userInformation", userInformation);
     if (userInformation && userInformation !== "error") {
       dispatch(getFriendsByUser(userInformation._id));
       socket.emit("registrarse", userInformation?._id);
     }else if(userInformation === "error"){
-      console.log("error");
       Swal.fire({
         icon: "error",
         title: "Su sesión ha expirado",
         text: "Por favor vuelva a iniciar sesión",
         type: "error",
         confirmButtonText: "Ok",
+        background: "#1e1c1d",
+        iconColor: "#fcd34d"
 
       }).then((result) => {
         if (result.isConfirmed) {
@@ -137,7 +139,7 @@ function App() {
             </AuthRoute>
           }
         />
-        <Route
+        {/* <Route
           path="/profile"
           element={
             <AuthRoute>
@@ -146,7 +148,7 @@ function App() {
               <ProfileUser />
             </AuthRoute>
           }
-        />
+        /> */}
         <Route
           path="/profile/:id"
           element={
@@ -180,10 +182,10 @@ function App() {
           <Route path="chat/group/:id" element={<MessageGroup />} />
         </Route>
         <Route
-          path="/post/:id"
+          path="/post/:id/:userId"
           element={
             <AuthRoute>
-              {/* <SideBar /> */}
+              <SideBar />
               <NavBar />
               <ViewPost />
             </AuthRoute>
@@ -208,7 +210,7 @@ function App() {
           }
         />
 
-        <Route path="*" element={<p>Not found</p>} />
+        <Route path="*" element={<img src={notFound} className='w-screen h-screen' />} />
       </Routes>
     </AuthProvider>
   );

@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { io } from "socket.io-client";
 const socket = io("http://localhost:3000");
-import { chatTimeReal, sendMessageBackAction } from "../../../redux/actions";
+import { chatTimeReal } from "../../../redux/actions";
 import styles from "./index.module.css";
 import { uploadImage } from "../../helpers/uploadImage";
 import { Spinner } from "flowbite-react";
@@ -44,20 +44,22 @@ function SendMessage({ scrollLastMessage, messageSend }) {
 
   const handleSentMessage = (e) => {
     e.preventDefault();
-
-    dispatch(messageSend(userInformation._id, id, sendMessage));
-    socket.emit("message", userInformation._id, id, sendMessage, hourSystem);
+    dispatch(messageSend(userInformation?._id, id, sendMessage, sendImages));
+    socket.emit("message", userInformation?._id, id, sendMessage, hourSystem);
     const messageInformation = {
       from: userInformation._id,
       to: id,
       message: sendMessage,
+      image: sendImages,
       hour: hourSystem,
       fromSelf: true,
     };
     dispatch(chatTimeReal(messageInformation));
     setSendMessage("");
     scrollLastMessage && setTimeout(() => scrollLastMessage(), 100);
+    setSendImage([]);
   };
+
   useEffect(() => {
     const receivedMessage = (sendMessage) => {
       dispatch(chatTimeReal(sendMessage));

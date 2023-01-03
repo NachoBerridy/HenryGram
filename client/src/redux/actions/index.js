@@ -1,5 +1,4 @@
 import axios from "axios";
-import { useState } from "react";
 export const CREATE_USER = "CREATE_USER";
 export const LOGIN = "LOGIN";
 export const LOGOUT = "LOGOUT";
@@ -18,6 +17,8 @@ export const SEND_MESSAGE_BACK = "SEND_MESSAGE_BACK";
 export const GET_CHATS_GROUP = "GET_CHATS_GROUP";
 export const GET_MESSAGE_BY_USER_GROUP = "GET_MESSAGE_BY_USER_GROUP";
 export const SEND_MESSAGE_BY_GROUP = "SEND_MESSAGE_BY_GROUP";
+export const INVITATION_SEND_GROUP = "INVITATION_SEND_GROUP";
+export const RESPONSE_GROUP_INVITATION = "RESPONSE_GROUP_INVITATION";
 export const MESSAGES_IS_CHAT = "MESSAGES_IS_CHAT";
 export const CHAT_TIME_REAL = "CHAT_TIME_REAL";
 export const CHANGE_PREVIEW_ULTIMATE_MESSAGE =
@@ -32,13 +33,24 @@ export const CLEAR_UPDATE = "CLEAR_UPDATE";
 export const SEARCH_USER = "SEARCH_USER";
 export const SEARCH_CHATS = "SEARCH_CHATS_ACTION";
 export const CLEAR_POSTS = "CLEAR_POSTS";
-
+export const EDIT_PROFILE = "EDIT_PROFILE";
+export const LIKE_DISLIKE_POST = "LIKE_DISLIKE_POST";
+export const GET_FRIENDS_AVATAR_AND_NAME = "GET_FRIENDS_AVATAR_AND_NAME";
+export const UPDATE_POST_REFRESH = "UPDATE_POST_REFRESH";
+export const POST_COMMENTS = "POST_COMMENTS";
+export const GET_COMMENTS = "GET_COMMENTS";
+export const GET_RECCOMENDS_MATCH = "GET_RECCOMENDS_POST";
+export const GET_POST_BY_ID = "GET_POST_BY_ID";
+export const REFRESH_UPDATE_PROFILE = "REFRESH_UPDATE_PROFILE";
+export const SET_LOADING = "SET_LOADING";
 //USERS INFORMATION
 //REGISTER
 export const createUser = (user) => {
   return async function (dispatch) {
     try {
+      dispatch({ type: SET_LOADING, payload: true });
       const result = await axios.post("http://localhost:3000/api/users", user);
+      dispatch({ type: SET_LOADING, payload: false });
       dispatch({ type: CREATE_USER, payload: result.data });
     } catch (error) {
       console.log(error);
@@ -69,16 +81,16 @@ export const logoutAction = () => {
 };
 // Estado global que tiene la informacion del usuario loguiado
 export const verifyUserAction = (token) => {
-	return async (dispatch) => {
-		try {
-			const result = await axios.get(
-				`http://localhost:3000/api/users/token?token=${token}`
-			);
-			return dispatch({ type: VERIFY_USER_TOKEN, payload: result.data });
-		} catch (error) {
-			return dispatch({ type: VERIFY_USER_TOKEN, payload: 'error' });
-		}
-	};
+  return async (dispatch) => {
+    try {
+      const result = await axios.get(
+        `http://localhost:3000/api/users/token?token=${token}`
+      );
+      return dispatch({ type: VERIFY_USER_TOKEN, payload: result.data });
+    } catch (error) {
+      return dispatch({ type: VERIFY_USER_TOKEN, payload: "error" });
+    }
+  };
 };
 
 export const getFriendsByUser = (id) => {
@@ -96,6 +108,7 @@ export const getFriendsByUser = (id) => {
 //USERS INFORMATION
 //FRIENDS
 export const getProfileFriendAction = (idUser) => {
+  if (idUser === "clear") return { type: GET_PROFILE_FRIEND, payload: {} };
   return async (dispatch) => {
     try {
       const result = await axios.get(
@@ -148,6 +161,19 @@ export const searchUserAction = (payload) => {
 };
 //FRIENDS
 
+export const getFriendsAvatarAndName = (id) => {
+  return async (dispatch) => {
+    try {
+      const result = await axios.get(
+        `http://localhost:3000/api/users/nameAndAvatar/${id}`
+      );
+      return result.data;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+};
+
 //POST USER
 export const postUser = (post) => {
   return async (dispatch) => {
@@ -159,7 +185,9 @@ export const postUser = (post) => {
     }
   };
 };
-
+export const updatePostRefresh = () => {
+  return { type: UPDATE_POST_REFRESH };
+};
 //CLEAN POST
 export const cleanPostState = () => {
   return { type: CLEAN_POST };
@@ -196,13 +224,14 @@ export const getMessageByUserBackAction = (data) => {
   };
 };
 
-export const sendMessageBackAction = (from, to, message) => {
+export const sendMessageBackAction = (from, to, message, image) => {
   return async (dispatch) => {
     try {
       const result = await axios.post(`http://localhost:3000/api/messages`, {
         from,
         to,
         message,
+        image,
       });
       return dispatch({ type: SEND_MESSAGE_BACK, payload: result.data });
     } catch (error) {
@@ -240,15 +269,42 @@ export const getChatByUserGroupAction = (id, limit) => {
     }
   };
 };
-export const sendMessageByGroup = (userId, groupId, content) => {
+export const sendMessageByGroup = (userId, groupId, content, image) => {
   return async (dispatch) => {
     try {
       const result = await axios.post(`http://localhost:3000/api/groups`, {
         userId,
         groupId,
         content,
+        image,
       });
       return dispatch({ type: SEND_MESSAGE_BY_GROUP, payload: result.data });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+};
+export const invitationSendGroupAction = (payload) => {
+  return async (dispatch) => {
+    try {
+      const result = await axios.post(
+        `http://localhost:3000/api/groups/req`,
+        payload
+      );
+      console.log(result.data, "data");
+      return dispatch({ type: INVITATION_SEND_GROUP, payload: result.data });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+};
+export const responseInvitationGroupAction = (payload) => {
+  return async (dispatch) => {
+    try {
+      await axios.post(`http://localhost:3000/api/groups/res`, payload);
+      return dispatch({
+        type: RESPONSE_GROUP_INVITATION,
+      });
     } catch (error) {
       console.log(error);
     }
@@ -271,10 +327,13 @@ export const searchChatsAction = (payload) => {
 //SEARCH
 
 //GET ALL POSTS
-export const getPostAllUsers = () => {
+
+export const getPostAllUsers = (id) => {
   return async (dispatch) => {
     try {
-      const result = await axios.get("http://localhost:3000/api/posts");
+      const result = await axios.get(
+        `http://localhost:3000/api/posts/recomended/${id}`
+      );
       dispatch({ type: GET_ALL_POSTS, payload: result.data });
     } catch (error) {
       console.log(error);
@@ -282,10 +341,12 @@ export const getPostAllUsers = () => {
   };
 };
 
-export const getPostUSer = (id) => {
+export const getPostUSer = (id, limit) => {
   return async (dispatch) => {
     try {
-      const result = await axios.get(`http://localhost:3000/api/posts/${id}`);
+      const result = await axios.get(
+        `http://localhost:3000/api/posts/user?id=${id}&limit=1`
+      );
       dispatch({ type: GET_POSTS, payload: result.data });
     } catch (error) {
       console.log(error);
@@ -337,17 +398,89 @@ export const updatePostFront = (body) => {
 //EDIT PROFILE
 
 export const editProfileAction = (data) => {
-	return async (dispatch) => {
-		try {
-			const result = await axios.put(
-				`http://localhost:3000/api/users/${data.id}`,
-				data
-			);
-			dispatch({ type: EDIT_PROFILE, payload: result.data });
-		} catch (error) {
-			console.log(error);
-		}
-	};
-}
+  return async (dispatch) => {
+    try {
+      const result = await axios.put(
+        `http://localhost:3000/api/users/${data.id}`,
+        data
+      );
+      dispatch({ type: EDIT_PROFILE, payload: result.data });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+};
 
+//POST COMMENTS
+export const postComment = (body) => {
+  return async (dispatch) => {
+    try {
+      const result = await axios.post(
+        "http://localhost:3000/api/posts/comment",
+        body
+      );
+      dispatch({ type: POST_COMMENTS, payload: result.data });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+};
 
+//GET COMMENTS OF A POST
+export const getComments = (id) => {
+  if (id === "clear") return { type: GET_COMMENTS, payload: null };
+  return async (dispatch) => {
+    try {
+      const result = await axios.get(
+        `http://localhost:3000/api/posts/comment/${id}`
+      );
+      dispatch({ type: GET_COMMENTS, payload: result.data });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+};
+export const getPostById = (id) => {
+  if (id === "clear") return { type: GET_POST_BY_ID, payload: {} };
+  return async (dispatch) => {
+    try {
+      const result = await axios.get(
+        `http://localhost:3000/api/posts/id/${id}`
+      );
+      dispatch({ type: GET_POST_BY_ID, payload: result.data });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+};
+export const getRecomendedMatches = (id) => {
+  return async (dispatch) => {
+    try {
+      const result = await axios.get(
+        `http://localhost:3000/api/posts/recomendedMatches/${id}`
+      );
+      dispatch({ type: GET_RECCOMENDS_MATCH, payload: result.data });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+};
+
+//LIKES
+export const likeDislikePostAction = (data) => {
+  return async (dispatch) => {
+    try {
+      await axios.post(
+        `http://localhost:3000/api/posts/like?postId=${data.postId}&userId=${data.userId}`,
+        data
+      );
+      dispatch({ type: LIKE_DISLIKE_POST });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+};
+
+export const refreshUpdateProfile = () => {
+  return { type: REFRESH_UPDATE_PROFILE };
+};
