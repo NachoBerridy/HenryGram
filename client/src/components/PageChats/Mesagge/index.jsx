@@ -12,7 +12,6 @@ import {
 } from "../../../redux/actions";
 import Loader from "../../Loader";
 import SkeletonUser from "../../Skeletons/skeletonUser";
-import AvatarStack from "../avatarStack";
 import CardMessage from "../CardMessage";
 import SendMessage from "../SendMessage";
 import styles from "./index.module.css";
