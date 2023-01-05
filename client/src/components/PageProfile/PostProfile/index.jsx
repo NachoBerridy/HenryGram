@@ -103,7 +103,7 @@ function PostProfile({ userInformation }) {
 
       <div>
         {!postUser && [1, 2].map((value) => <SkeletonPost key={value} />)}
-        {postUser?.length ? (
+        {(postUser?.length > 0)  ? (
           postUser
             ?.map((post) => (
               <Post
