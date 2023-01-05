@@ -7,7 +7,7 @@ import MakePost from "../MakePost";
 import Post from "../Post";
 import RecommendedFriends from "../RecommendedFriends";
 import Loader from "../../Loader";
-
+const URL = import.meta.env.VITE_URL_RAILWAY
 function Home() {
   const dispatch = useDispatch();
   const postUsers = useSelector((state) => state.allPosts);
@@ -15,7 +15,7 @@ function Home() {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const user = useSelector((state) => state.userInformation);
-  console.log(postUsers)
+  
   useEffect(() => {
     if (user && !postUsers.length) {
       dispatch(getPostAllUsers(user?._id));
@@ -26,10 +26,9 @@ function Home() {
       console.log("entre");
       axios
         .get(
-          `http://localhost:3000/api/posts/recomended/${user?._id}?limit=${page}`
+          `${URL || "http://localhost:3000"}/api/posts/recomended/${user?._id}?limit=${page}`
         )
         .then((response) => {
-          console.log("response");
           setNewsLoadPost([...newsLoadPost, ...response.data]);
           setLoading(false);
         })

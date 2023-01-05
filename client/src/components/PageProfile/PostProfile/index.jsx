@@ -10,6 +10,7 @@ import { useParams } from "react-router-dom";
 import logoMatch from "../../../assets/coheteHenry.png";
 import axios from "axios";
 import Loader from "../../Loader";
+const URL = import.meta.env.VITE_URL_RAILWAY;
 function PostProfile({ userInformation }) {
   const postUser = useSelector((state) => state.userPostsProfile);
   const userlogged = useSelector((state) => state.userInformation);
@@ -17,14 +18,15 @@ function PostProfile({ userInformation }) {
   const [newsLoadPost, setNewsLoadPost] = useState([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
-  const [loadingPost, setLoadingPost] = useState(true);
+  const [isMorePosts, setIsMorePosts] = useState(false);
+
   const location = useLocation();
   const dispatch = useDispatch();
   const { id } = useParams();
+
   useEffect(() => {
     (async () => {
       dispatch(getPostUSer(id));
-      setLoadingPost(false);
     })();
 
     return () => {
@@ -35,24 +37,35 @@ function PostProfile({ userInformation }) {
   useEffect(() => {
     if (page > 1) {
       axios
-        .get(`http://localhost:3000/api/posts/user?id=${id}&limit=${page}`)
+        .get(
+          `${
+            URL || `http://localhost:3000/api/posts/user?id=${id}&limit=${page}`
+          }`
+        )
         .then((response) => {
-          setNewsLoadPost([...newsLoadPost, ...response.data]);
-          setLoading(false);
+          console.log(response.data, "data");
+          if (!response.data.length) {
+            setLoading(false);
+            setIsMorePosts(true);
+          } else {
+            setNewsLoadPost([...newsLoadPost, ...response.data]);
+            setLoading(false);
+          }
         })
         .catch((error) => {
           console.log(error);
         });
     }
   }, [page]);
-
+  console.log(loading, "lod");
   const handleScroll = () => {
     if (
       document.getElementById("viewHeightPostByUser").clientHeight +
         1 +
         document.getElementById("viewHeightPostByUser").scrollTop >=
         document.getElementById("viewHeightPostByUser").scrollHeight &&
-      !loading
+      !loading &&
+      !isMorePosts
     ) {
       setPage(page + 1);
       setLoading(true);
@@ -70,7 +83,7 @@ function PostProfile({ userInformation }) {
           .removeEventListener("scroll", handleScroll);
       }
     };
-  }, []);
+  }, [id, page, isMorePosts]);
 
   return (
     <section className=" h-fit pt-2 rounded-lg">
