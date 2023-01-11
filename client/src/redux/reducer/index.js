@@ -1,5 +1,6 @@
 import {
   changeMessageUltimateHelp,
+  searchChatsGroupsHelp,
   searchChatsHelp,
   searchFriendHelp,
 } from "../../components/PageChats/utils";
@@ -45,6 +46,8 @@ import {
   SET_LOADING,
   GET_RECCOMENDS_MATCH,
   REFRESH_UPDATE_PROFILE,
+  SEARCH_CHATS_GROUPS,
+  BELONG_MATCH_GROUP,
 } from "../actions";
 
 const initialState = {
@@ -69,6 +72,7 @@ const initialState = {
   matchsRecommended: null,
   updatePostRefresh: false,
   refresh_update_profile: false,
+  belongsMatchGroup: [],
   comments: null,
   postById: {},
 };
@@ -191,6 +195,7 @@ const rootReducer = (state = initialState, action) => {
       return {
         ...state,
         chatUsers: action.payload,
+        chatUsersCopy: action.payload,
       };
     }
     case INVITATION_SEND_GROUP: {
@@ -257,6 +262,12 @@ const rootReducer = (state = initialState, action) => {
       return {
         ...state,
         chatUsers: searchChatsHelp(action.payload, state.chatUsersCopy),
+      };
+    }
+    case SEARCH_CHATS_GROUPS: {
+      return {
+        ...state,
+        chatUsers: searchChatsGroupsHelp(action.payload, state.chatUsersCopy),
       };
     }
     //SEARCH
@@ -336,6 +347,12 @@ const rootReducer = (state = initialState, action) => {
       return {
         ...state,
         refresh_update_profile: !state.refresh_update_profile,
+      };
+    }
+    case BELONG_MATCH_GROUP: {
+      return {
+        ...state,
+        belongsMatchGroup: action.payload,
       };
     }
     default:
