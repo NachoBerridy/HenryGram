@@ -95,7 +95,7 @@ const validateUser = async (req, res) => {
 
   try {
     await user.save();
-    res.redirect("http://127.0.0.1:5173/validate");
+    res.redirect("https://henry-gram-client.vercel.app/#/home");
   } catch (err) {
     res.status(500).json(err);
   }
